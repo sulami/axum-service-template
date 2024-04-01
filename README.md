@@ -1,3 +1,20 @@
+# Axum Service Template
+
+## Usage
+
+1. Ensure you have `cargo-generate`:
+   ```sh
+   cargo install cargo-generate
+   ```
+   (`cargo binstall` also works.)
+2. Setup a new project using
+   ```sh
+   cargo generate --git https://github.com/sulami/axum-service-template
+   ```
+   and follow the prompts.
+3. Remove any content above this line.
+---
+
 # {{project-name}}
 
 Build and run with `cargo`, e.g. `cargo run -- -p 8080` to run a debug build on
