@@ -17,9 +17,12 @@
 
 # {{project-name}}
 
-Build and run with `cargo`, e.g. `cargo run -- -p 8080` to run a debug build on
-port `8080`.
+Build and run with `cargo`, e.g.
+```sh
+`cargo run -- --port 8080 --database-url "postgres://$(whoami)@localhost:5432/postgres"
+```
+to run a debug build on port `8080`.
 
-Use `RUST_LOG=debug` (or even `trace`) to get more detailed logging.
+Use `RUST_LOG=trace` to get more detailed logging. The default level is `info`.
 
 Use `#[tracing::instrument]` to instrument function calls for o11y and span traces.

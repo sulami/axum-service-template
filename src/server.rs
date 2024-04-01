@@ -1,5 +1,7 @@
 //! HTTP server
 
+use std::time::Duration;
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -10,6 +12,7 @@ use color_eyre::{
     eyre::{Report, WrapErr},
     Result,
 };
+use sqlx::postgres::PgPoolOptions;
 use tokio::{net::TcpListener, select, signal};
 use tower_http::trace::TraceLayer;
 use tracing::info;
@@ -18,11 +21,20 @@ mod health;
 mod index;
 
 /// Runs the HTTP server on the specified port.
-pub async fn run(port: u16) -> Result<()> {
+pub async fn run(port: u16, db_url: &str) -> Result<()> {
+    let state = ServiceState {
+        db_pool: PgPoolOptions::new()
+            .max_connections(5)
+            .acquire_timeout(Duration::from_secs(3))
+            .connect(db_url)
+            .await
+            .wrap_err("failed to establish database connection")?,
+    };
     let app = Router::new()
         .route("/", get(index::index))
         .route("/health-check", get(health::health_check))
         // NB Add new routes here.
+        .with_state(state)
         .layer(TraceLayer::new_for_http());
     let listener = TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
@@ -34,6 +46,13 @@ pub async fn run(port: u16) -> Result<()> {
         .wrap_err("server failed")?;
 
     Ok(())
+}
+
+/// The state of the service.
+#[derive(Clone)]
+struct ServiceState {
+    /// The database connection pool.
+    db_pool: sqlx::PgPool,
 }
 
 /// A service error, resulting in a 500 response.
